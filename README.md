@@ -191,6 +191,15 @@ Content-Type: application/json
 | `500` | Error interno al predecir | `{"error": "Error al analizar el sentimiento: <detalle>"}` |
 
 
+## Actualizar la API desde el repositorio
+ 
+Cada vez que haya cambios en el repositorio, conéctate al VPS y corre:
+ 
+```bash
+cd /home/ubuntu/AnalizadorDeSentimientos
+git pull
+sudo systemctl restart analizador
+
 
 ## Tecnologías utilizadas
 
