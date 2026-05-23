@@ -198,11 +198,3 @@ print(f"\nEJEMPLO 3: Dudoso (probabilidad ~0.5)")
 print(f"Texto:           {ej_dudoso['text'][:200]}")
 print(f"Real/Pred:       {'Positivo' if ej_dudoso['sentimiento'] == 1 else 'Negativo'} / {'Positivo' if ej_dudoso['prediccion'] == 1 else 'Negativo'}")
 print(f"Prob Pos/Neg:    {ej_dudoso['prob_pos']:.4f} / {ej_dudoso['prob_neg']:.4f}")
-
-
-
-# Guardar modelo y vectorizador
-joblib.dump(modelo, 'modelo_sentimiento.pkl')
-joblib.dump(vectorizer, 'vectorizador.pkl')
-
-print("Modelo y vectorizador guardados correctamente.")
