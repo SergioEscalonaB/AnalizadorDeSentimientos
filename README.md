@@ -211,3 +211,160 @@ sudo systemctl restart analizador
 | joblib | Serialización del modelo |
 | systemd | Gestión del proceso en el servidor |
 | Oracle Cloud | Infraestructura VPS |
+
+# Configurar HTTPS en VPS con Cloudflare Tunnel
+
+Guía para exponer una API HTTP local con HTTPS usando Cloudflare Tunnel, sin necesidad de configurar certificados SSL manualmente.
+
+---
+
+## Requisitos previos
+
+- VPS con Ubuntu (ARM64 o AMD64)
+- Un dominio activo en Cloudflare (plan gratuito funciona)
+- Tu API corriendo localmente en un puerto (ej: `localhost:5000`)
+
+---
+
+## Paso 1: Instalar cloudflared
+
+**Para VPS ARM64: La que usamos**
+```bash
+wget https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-arm64.deb
+sudo dpkg -i cloudflared-linux-arm64.deb
+```
+
+**Para VPS AMD64:**
+```bash
+wget https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64.deb
+sudo dpkg -i cloudflared-linux-amd64.deb
+```
+
+Verificar instalación:
+```bash
+cloudflared --version
+```
+
+---
+
+## Paso 2: Autenticarse en Cloudflare
+
+```bash
+cloudflared tunnel login
+```
+
+Abre el enlace que aparece en el navegador, inicia sesión en tu cuenta de Cloudflare y selecciona el dominio que quieres usar.
+
+---
+
+## Paso 3: Crear el tunnel
+
+```bash
+cloudflared tunnel create mi-api
+```
+
+Guarda el **UUID** que aparece en la salida. Ejemplo:
+```
+Created tunnel mi-api with id 87423868-09f3-4dbf-9c8d-01590b71d2b7
+```
+
+Las credenciales se guardan automáticamente en:
+```
+~/.cloudflared/<UUID>.json
+```
+
+---
+
+## Paso 4: Crear el archivo de configuración
+
+```bash
+nano ~/.cloudflared/config.yml
+```
+
+Contenido del archivo (reemplaza con tu UUID y dominio):
+```yaml
+tunnel: 87423868-09f3-4dbf-9c8d-01590b71d2b7
+credentials-file: /etc/cloudflared/87423868-09f3-4dbf-9c8d-01590b71d2b7.json
+
+ingress:
+  - hostname: api.tu-dominio.com
+    service: http://localhost:5000
+  - service: http_status:404
+```
+
+> El subdominio `api.tu-dominio.com` es independiente de cualquier otro subdominio que ya tengas configurado (ej: Next.js en el dominio raíz).
+
+---
+
+## Paso 5: Crear el registro DNS
+
+```bash
+cloudflared tunnel route dns mi-api api.tu-dominio.com
+```
+
+Esto crea automáticamente un registro CNAME en Cloudflare apuntando al tunnel.
+
+---
+
+## Paso 6: Instalar como servicio del sistema
+
+Copia los archivos de configuración a la ruta del sistema:
+```bash
+sudo mkdir -p /etc/cloudflared
+sudo cp ~/.cloudflared/config.yml /etc/cloudflared/
+sudo cp ~/.cloudflared/<UUID>.json /etc/cloudflared/
+```
+
+Edita el config para actualizar la ruta del JSON:
+```bash
+sudo nano /etc/cloudflared/config.yml
+```
+
+Cambia la línea `credentials-file` a:
+```yaml
+credentials-file: /etc/cloudflared/<UUID>.json
+```
+
+Instala y habilita el servicio:
+```bash
+sudo cloudflared service install
+sudo systemctl enable cloudflared
+sudo systemctl start cloudflared
+```
+
+Verifica que esté corriendo:
+```bash
+sudo systemctl status cloudflared
+```
+
+---
+
+## Paso 7: Verificar que funciona
+
+```bash
+curl https://api.tu-dominio.com/analizar \
+  -X POST \
+  -H "Content-Type: application/json" \
+  -d '{"reseña": "me encantó el producto"}'
+```
+
+Si la API responde correctamente, ya está disponible con HTTPS.
+
+---
+
+## Resultado
+
+| Antes | Después |
+|---|---|
+| `http://IP:5000/analizar` | `https://api.tu-dominio.com/analizar` |
+| Sin SSL | HTTPS automático |
+| No compatible con Make.com | Compatible con Make.com y cualquier cliente |
+
+---
+
+## Notas
+
+- El tunnel arranca automáticamente con el sistema gracias a `systemd`.
+- Cloudflare gestiona el certificado SSL sin costo adicional.
+- No interfiere con otros subdominios ni servicios en el mismo dominio.
+- Si cambias el puerto de la API, edita `/etc/cloudflared/config.yml` y reinicia: `sudo systemctl restart cloudflared`.
