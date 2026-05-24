@@ -388,6 +388,12 @@
         return "";
       }
 
+      function formatDate(value) {
+        const text = String(value).trim();
+        const match = text.match(/\d{4}-\d{2}-\d{2}/);
+        return match ? match[0] : text.slice(0, 10);
+      }
+
       function createReviewCard(review) {
         const card = document.createElement("article");
         card.className = "review-card";
@@ -412,7 +418,7 @@
 
         if (review.fecha) {
           const fecha = document.createElement("span");
-          fecha.textContent = review.fecha;
+          fecha.textContent = formatDate(review.fecha);
           meta.appendChild(fecha);
         }
 
