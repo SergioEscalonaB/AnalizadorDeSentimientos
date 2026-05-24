@@ -42,7 +42,15 @@
         display: flex;
         justify-content: center;
         align-items: flex-start;
-        padding: 40px 18px 20px;
+        padding: 32px 18px 26px;
+      }
+
+      .page {
+        width: min(1200px, 100%);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 22px;
       }
 
       .card {
@@ -53,7 +61,7 @@
         box-shadow: var(--shadow);
         backdrop-filter: blur(10px);
         padding: 18px;
-        margin-top: 14px;
+        margin-top: 8px;
       }
 
       h1 {
@@ -170,9 +178,9 @@
       }
 
       .reviews-section {
-        margin-top: 18px;
-        padding-top: 16px;
-        border-top: 1px solid rgba(199, 219, 242, 0.9);
+        width: 100%;
+        align-self: stretch;
+        padding: 2px 0 0;
       }
 
       .reviews-header {
@@ -180,25 +188,27 @@
         align-items: baseline;
         justify-content: space-between;
         gap: 12px;
-        margin-bottom: 12px;
+        margin-bottom: 14px;
       }
 
       .reviews-title {
         margin: 0;
-        font-size: 1rem;
+        font-size: 1.05rem;
       }
 
       .reviews-grid {
         display: grid;
-        gap: 12px;
+        gap: 14px;
+        grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
       }
 
       .review-card {
         background: linear-gradient(180deg, #ffffff 0%, #f7fbff 100%);
         border: 1px solid rgba(199, 219, 242, 0.9);
-        border-radius: 14px;
-        padding: 14px;
-        box-shadow: 0 10px 22px rgba(31, 111, 235, 0.08);
+        border-radius: 16px;
+        padding: 16px;
+        box-shadow: 0 12px 28px rgba(31, 111, 235, 0.1);
+        min-height: 150px;
       }
 
       .review-top {
@@ -211,7 +221,7 @@
 
       .review-product {
         margin: 0;
-        font-size: 0.98rem;
+        font-size: 1rem;
         font-weight: 700;
         color: var(--accent-strong);
       }
@@ -239,23 +249,29 @@
         margin: 0;
         color: var(--text);
         line-height: 1.45;
-        font-size: 0.93rem;
+        font-size: 0.94rem;
         white-space: pre-wrap;
       }
 
       .empty-state {
         margin: 0;
-        padding: 14px;
-        border-radius: 14px;
+        padding: 16px;
+        border-radius: 16px;
         background: #f7fbff;
         border: 1px dashed rgba(31, 111, 235, 0.2);
         color: var(--muted);
         font-size: 0.92rem;
+        grid-column: 1 / -1;
       }
 
       @media (max-width: 640px) {
         body {
-          padding-top: 22px;
+          padding-top: 18px;
+        }
+
+        .page {
+          align-items: stretch;
+          gap: 18px;
         }
 
         .card {
@@ -267,67 +283,73 @@
         .grid {
           grid-template-columns: 1fr;
         }
+
+        .reviews-grid {
+          grid-template-columns: 1fr;
+        }
       }
     </style>
   </head>
   <body>
-    <main class="card">
-      <h1>Formulario de reseñas</h1>
-      <p>
-        Completa los datos y el formulario enviará la información a tu Google
-        Sheet.
-      </p>
+    <div class="page">
+      <main class="card">
+        <h1>Formulario de reseñas</h1>
+        <p>
+          Completa los datos y el formulario enviará la información a tu Google
+          Sheet.
+        </p>
 
-      <form id="reviewForm">
-        <div class="grid">
-          <div class="field">
-            <label for="producto">Producto</label>
-            <input
-              id="producto"
-              name="producto"
-              type="text"
-              placeholder="Ej. Audífonos inalámbricos"
-              required
-            />
-          </div>
+        <form id="reviewForm">
+          <div class="grid">
+            <div class="field">
+              <label for="producto">Producto</label>
+              <input
+                id="producto"
+                name="producto"
+                type="text"
+                placeholder="Ej. Audífonos inalámbricos"
+                required
+              />
+            </div>
 
-          <div class="field">
-            <label for="cliente">Cliente</label>
-            <input
-              id="cliente"
-              name="cliente"
-              type="text"
-              placeholder="Ej. Ana Pérez"
-              required
-            />
-          </div>
-        </div>
-
-        <div class="field">
-          <label for="reseña">Reseña</label>
-          <textarea
-            id="reseña"
-            name="reseña"
-            placeholder="Escribe tu opinion..."
-            required
-          ></textarea>
-        </div>
-
-        <div class="grid">
-          <div class="field">
-            <label for="fecha">Fecha</label>
-            <input id="fecha" name="fecha" type="date" required />
-          </div>
-
-          <div class="field">
-            <label>&nbsp;</label>
-            <div class="actions">
-              <button id="submitBtn" type="submit">Enviar al Sheet</button>
-              <div id="status" class="status"></div>
+            <div class="field">
+              <label for="cliente">Cliente</label>
+              <input
+                id="cliente"
+                name="cliente"
+                type="text"
+                placeholder="Ej. Ana Pérez"
+                required
+              />
             </div>
           </div>
-        </div>
-      </form>
+
+          <div class="field">
+            <label for="reseña">Reseña</label>
+            <textarea
+              id="reseña"
+              name="reseña"
+              placeholder="Escribe tu opinion..."
+              required
+            ></textarea>
+          </div>
+
+          <div class="grid">
+            <div class="field">
+              <label for="fecha">Fecha</label>
+              <input id="fecha" name="fecha" type="date" required />
+            </div>
+
+            <div class="field">
+              <label>&nbsp;</label>
+              <div class="actions">
+                <button id="submitBtn" type="submit">Enviar al Sheet</button>
+                <div id="status" class="status"></div>
+              </div>
+            </div>
+          </div>
+        </form>
+      </main>
 
       <section class="reviews-section" aria-labelledby="reviewsTitle">
         <div class="reviews-header">
@@ -336,7 +358,7 @@
         </div>
         <div id="reviewsGrid" class="reviews-grid"></div>
       </section>
-    </main>
+    </div>
 
     <script>
       const SHEET_ENDPOINT =
