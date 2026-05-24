@@ -169,6 +169,90 @@
         border: 1px solid rgba(31, 111, 235, 0.12);
       }
 
+      .reviews-section {
+        margin-top: 18px;
+        padding-top: 16px;
+        border-top: 1px solid rgba(199, 219, 242, 0.9);
+      }
+
+      .reviews-header {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 12px;
+      }
+
+      .reviews-title {
+        margin: 0;
+        font-size: 1rem;
+      }
+
+      .reviews-grid {
+        display: grid;
+        gap: 12px;
+      }
+
+      .review-card {
+        background: linear-gradient(180deg, #ffffff 0%, #f7fbff 100%);
+        border: 1px solid rgba(199, 219, 242, 0.9);
+        border-radius: 14px;
+        padding: 14px;
+        box-shadow: 0 10px 22px rgba(31, 111, 235, 0.08);
+      }
+
+      .review-top {
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+        align-items: flex-start;
+        margin-bottom: 8px;
+      }
+
+      .review-product {
+        margin: 0;
+        font-size: 0.98rem;
+        font-weight: 700;
+        color: var(--accent-strong);
+      }
+
+      .review-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        color: var(--muted);
+        font-size: 0.82rem;
+      }
+
+      .review-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 4px 8px;
+        border-radius: 999px;
+        background: var(--accent-soft);
+        color: #164b9d;
+        font-size: 0.78rem;
+        font-weight: 700;
+      }
+
+      .review-text {
+        margin: 0;
+        color: var(--text);
+        line-height: 1.45;
+        font-size: 0.93rem;
+        white-space: pre-wrap;
+      }
+
+      .empty-state {
+        margin: 0;
+        padding: 14px;
+        border-radius: 14px;
+        background: #f7fbff;
+        border: 1px dashed rgba(31, 111, 235, 0.2);
+        color: var(--muted);
+        font-size: 0.92rem;
+      }
+
       @media (max-width: 640px) {
         body {
           padding-top: 22px;
@@ -244,17 +328,178 @@
           </div>
         </div>
       </form>
+
+      <section class="reviews-section" aria-labelledby="reviewsTitle">
+        <div class="reviews-header">
+          <h2 id="reviewsTitle" class="reviews-title">Reseñas destacadas</h2>
+          <div id="reviewsStatus" class="status">Cargando...</div>
+        </div>
+        <div id="reviewsGrid" class="reviews-grid"></div>
+      </section>
     </main>
 
     <script>
       const SHEET_ENDPOINT =
-        "https://script.google.com/macros/s/AKfycbxwNluxtBZDXTkBElTYeFzemYdMus25J5FsYXjbuEY27XZ05sfxd4KmT6ooY_AAshhbnQ/exec";
+        "https://script.google.com/macros/s/AKfycbwMlrqC8Y5OPhgqx3MIjUScCrJbivjAqb_cjcLRX-hOIemZwxCKtpwo5JzP3Bi3oHGy4Q/exec";
+      const REVIEWS_ENDPOINT = SHEET_ENDPOINT;
       const form = document.getElementById("reviewForm");
       const status = document.getElementById("status");
       const submitBtn = document.getElementById("submitBtn");
       const fechaInput = document.getElementById("fecha");
+      const reviewsGrid = document.getElementById("reviewsGrid");
+      const reviewsStatus = document.getElementById("reviewsStatus");
 
       fechaInput.value = new Date().toISOString().slice(0, 10);
+
+      function normalizeValue(value) {
+        return typeof value === "string" ? value.trim() : (value ?? "");
+      }
+
+      function pickField(row, keys) {
+        for (const key of keys) {
+          const value = row?.[key];
+          if (value !== undefined && value !== null && String(value).trim()) {
+            return String(value).trim();
+          }
+        }
+
+        return "";
+      }
+
+      function createReviewCard(review) {
+        const card = document.createElement("article");
+        card.className = "review-card";
+
+        const top = document.createElement("div");
+        top.className = "review-top";
+
+        const titleWrap = document.createElement("div");
+
+        const product = document.createElement("h3");
+        product.className = "review-product";
+        product.textContent = review.producto || "Producto sin nombre";
+
+        const meta = document.createElement("div");
+        meta.className = "review-meta";
+
+        if (review.cliente) {
+          const cliente = document.createElement("span");
+          cliente.textContent = review.cliente;
+          meta.appendChild(cliente);
+        }
+
+        if (review.fecha) {
+          const fecha = document.createElement("span");
+          fecha.textContent = review.fecha;
+          meta.appendChild(fecha);
+        }
+
+        titleWrap.appendChild(product);
+        if (meta.childNodes.length > 0) {
+          titleWrap.appendChild(meta);
+        }
+
+        const badge = document.createElement("span");
+        badge.className = "review-badge";
+        badge.textContent = review.sentimiento || "Destacada";
+
+        top.appendChild(titleWrap);
+        top.appendChild(badge);
+
+        const text = document.createElement("p");
+        text.className = "review-text";
+        text.textContent = review.resena || "Sin reseña disponible.";
+
+        card.appendChild(top);
+        card.appendChild(text);
+
+        return card;
+      }
+
+      function renderReviews(reviews) {
+        reviewsGrid.replaceChildren();
+
+        if (!reviews.length) {
+          const empty = document.createElement("p");
+          empty.className = "empty-state";
+          empty.textContent = "Todavía no hay reseñas destacadas en esta hoja.";
+          reviewsGrid.appendChild(empty);
+          return;
+        }
+
+        reviews.forEach((review) => {
+          reviewsGrid.appendChild(createReviewCard(review));
+        });
+      }
+
+      async function loadHighlightedReviews() {
+        reviewsStatus.textContent = "Actualizando...";
+
+        try {
+          const response = await fetch(REVIEWS_ENDPOINT, {
+            method: "GET",
+            cache: "no-store",
+          });
+
+          if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+          }
+
+          const data = await response.json();
+          const rows = Array.isArray(data.rows)
+            ? data.rows
+            : Array.isArray(data.data)
+              ? data.data
+              : Array.isArray(data.reviews)
+                ? data.reviews
+                : [];
+
+          const reviews = rows.map((row) => ({
+            producto: pickField(row, [
+              "producto",
+              "Producto",
+              "item",
+              "titulo",
+              "title",
+            ]),
+            cliente: pickField(row, [
+              "cliente",
+              "Cliente",
+              "nombre",
+              "Nombre",
+              "autor",
+            ]),
+            resena: pickField(row, [
+              "resena",
+              "reseña",
+              "Reseña",
+              "review",
+              "comentario",
+              "Comentario",
+              "text",
+              "Texto",
+            ]),
+            fecha: pickField(row, ["fecha", "Fecha", "date", "Date"]),
+            sentimiento: pickField(row, [
+              "sentimiento",
+              "Sentimiento",
+              "estado",
+              "Estado",
+            ]),
+          }));
+
+          renderReviews(reviews);
+          reviewsStatus.textContent = `Mostrando ${reviews.length} reseña${reviews.length === 1 ? "" : "s"}.`;
+        } catch (error) {
+          reviewsGrid.replaceChildren();
+          const empty = document.createElement("p");
+          empty.className = "empty-state";
+          empty.textContent =
+            "No se pudieron cargar las reseñas destacadas. Revisa que el doGet devuelva JSON.";
+          reviewsGrid.appendChild(empty);
+          reviewsStatus.textContent = "Sin conexión a la hoja.";
+        }
+      }
 
       form.addEventListener("submit", async (event) => {
         event.preventDefault();
@@ -293,12 +538,15 @@
           status.textContent = "Datos enviados correctamente.";
           form.reset();
           fechaInput.value = new Date().toISOString().slice(0, 10);
+          loadHighlightedReviews();
         } catch (error) {
           status.textContent = "No se pudo enviar la información.";
         } finally {
           submitBtn.disabled = false;
         }
       });
+
+      loadHighlightedReviews();
     </script>
   </body>
 </html>
