@@ -2,7 +2,7 @@
 
 Este flujo conecta una hoja de Google Sheets con la API de análisis de sentimiento y ejecuta acciones automáticas según el resultado. La idea general es simple: cuando entra una nueva reseña, Make la envía a la API, interpreta la respuesta y decide qué hacer después.
 
-
+![Flujo en Make](./Make.png)
 ---
 
 ## Objetivo
