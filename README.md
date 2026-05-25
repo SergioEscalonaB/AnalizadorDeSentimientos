@@ -9,6 +9,7 @@ API REST que analiza el sentimiento (positivo o negativo) de reseñas en españo
 - [Estructura del Proyecto](README.md)
 - [Despliegue en VPS](DESPLIEGUE.md)
 - [Uso de la API](USO_API.md)
+- [Flujo en Make](FLUJO_MAKE.md)
 
 ---
 
