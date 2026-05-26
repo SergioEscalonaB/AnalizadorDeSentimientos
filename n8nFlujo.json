@@ -1,0 +1,625 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "documentId": {
+          "__rl": true,
+          "value": "https://docs.google.com/spreadsheets/d/1bqlHGqfuaECb6VVnH7Jn94cCAjt8rKlKdEdYEEgnpTU/edit?usp=sharing",
+          "mode": "url"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Hoja 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1bqlHGqfuaECb6VVnH7Jn94cCAjt8rKlKdEdYEEgnpTU/edit#gid=0"
+        },
+        "event": "rowAdded",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTrigger",
+      "typeVersion": 1,
+      "position": [
+        176,
+        -80
+      ],
+      "id": "e3e82a3d-1387-4e60-ba54-794ad669a15a",
+      "name": "Google Sheets Trigger",
+      "alwaysOutputData": false,
+      "executeOnce": false,
+      "retryOnFail": false,
+      "notesInFlow": false,
+      "credentials": {
+        "googleSheetsTriggerOAuth2Api": {
+          "id": "whJ6UuYBiVmckNCH",
+          "name": "Google Sheets Trigger account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.gestor-tech.online/analizar",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"reseña\" : \"{{ $json['Reseña'] }}\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        688,
+        -80
+      ],
+      "id": "2c9eb3d0-6c34-43d8-b3c9-e63ca8b829e1",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.sentimiento }}",
+                    "rightValue": "Positivo",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "80963d83-1a68-46c5-ab1c-925d1a35b355"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "9e3e1120-891e-49f4-9bc4-d2ab2324242e",
+                    "leftValue": "={{ $json.sentimiento }}",
+                    "rightValue": "Negativo",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        864,
+        -80
+      ],
+      "id": "a528f0bc-67f0-48d3-9a69-42a9b2b8b8c7",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "sendTo": "sergioescalona2610@hotmail.com",
+        "subject": "Reseña Negativa",
+        "emailType": "text",
+        "message": "=Recibiste una reseña negativa, responde de inmediato. \n\nReseña: {{ $('Limit').item.json['Reseña'] }}\nProducto: {{ $('Limit').item.json.Producto }}\nCliente: {{ $('Limit').item.json.Cliente }}\nFecha: {{ $('Limit').item.json.Fecha }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1120,
+        16
+      ],
+      "id": "39342d47-c7f5-49f3-a4f2-30fdacadd674",
+      "name": "Send a message",
+      "webhookId": "8d62f3c6-2aed-474c-af71-2db25ec722d2",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "FnORU3BoFkE5INIO",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "keep": "lastItems"
+      },
+      "type": "n8n-nodes-base.limit",
+      "typeVersion": 1,
+      "position": [
+        512,
+        -80
+      ],
+      "id": "23878357-f748-41ff-8f92-285fcf8b2de5",
+      "name": "Limit"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "https://docs.google.com/spreadsheets/d/1bqlHGqfuaECb6VVnH7Jn94cCAjt8rKlKdEdYEEgnpTU/edit?usp=sharing",
+          "mode": "url"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Hoja 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1bqlHGqfuaECb6VVnH7Jn94cCAjt8rKlKdEdYEEgnpTU/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Sentimiento": "={{ $('HTTP Request').item.json.sentimiento }}",
+            "row_number": "={{ $('Limit').item.json.row_number }}"
+          },
+          "matchingColumns": [
+            "row_number"
+          ],
+          "schema": [
+            {
+              "id": "Producto",
+              "displayName": "Producto",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Cliente",
+              "displayName": "Cliente",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Reseña",
+              "displayName": "Reseña",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Fecha",
+              "displayName": "Fecha",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Sentimiento",
+              "displayName": "Sentimiento",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1120,
+        -176
+      ],
+      "id": "f35c8c78-f668-434e-be93-e29e2dcfa258",
+      "name": "Update row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "KrGcL4JQUxStbMjR",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "https://docs.google.com/spreadsheets/d/1bqlHGqfuaECb6VVnH7Jn94cCAjt8rKlKdEdYEEgnpTU/edit?usp=sharing",
+          "mode": "url"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1950598538,
+          "mode": "list",
+          "cachedResultName": "Reseñas Destacadas",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1bqlHGqfuaECb6VVnH7Jn94cCAjt8rKlKdEdYEEgnpTU/edit#gid=1950598538"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Sentimiento": "={{ $('HTTP Request').item.json.sentimiento }}",
+            "Producto": "={{ $('Limit').item.json.Producto }}",
+            "Cliente": "={{ $('Limit').item.json.Cliente }}",
+            "Reseña": "={{ $('Limit').item.json['Reseña'] }}",
+            "Fecha": "={{ $('Limit').item.json.Fecha }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Producto",
+              "displayName": "Producto",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Cliente",
+              "displayName": "Cliente",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Reseña",
+              "displayName": "Reseña",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Fecha",
+              "displayName": "Fecha",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Sentimiento",
+              "displayName": "Sentimiento",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1552,
+        -176
+      ],
+      "id": "26d43209-dac5-4947-b293-ad25a558830d",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "KrGcL4JQUxStbMjR",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "https://docs.google.com/spreadsheets/d/1bqlHGqfuaECb6VVnH7Jn94cCAjt8rKlKdEdYEEgnpTU/edit?usp=sharing",
+          "mode": "url"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Hoja 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1bqlHGqfuaECb6VVnH7Jn94cCAjt8rKlKdEdYEEgnpTU/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Sentimiento": "={{ $('HTTP Request').item.json.sentimiento }}",
+            "row_number": "={{ $('Limit').item.json.row_number }}"
+          },
+          "matchingColumns": [
+            "row_number"
+          ],
+          "schema": [
+            {
+              "id": "Producto",
+              "displayName": "Producto",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Cliente",
+              "displayName": "Cliente",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Reseña",
+              "displayName": "Reseña",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Fecha",
+              "displayName": "Fecha",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Sentimiento",
+              "displayName": "Sentimiento",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1552,
+        16
+      ],
+      "id": "f57a7df0-6a35-472c-9c25-e3a614da8be5",
+      "name": "Update row in sheet1",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "KrGcL4JQUxStbMjR",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "https://docs.google.com/spreadsheets/d/1bqlHGqfuaECb6VVnH7Jn94cCAjt8rKlKdEdYEEgnpTU/edit?usp=sharing",
+          "mode": "url"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Hoja 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1bqlHGqfuaECb6VVnH7Jn94cCAjt8rKlKdEdYEEgnpTU/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        336,
+        -80
+      ],
+      "id": "df2bdbb7-3db7-48fd-ae43-673390077839",
+      "name": "Get row(s) in sheet",
+      "executeOnce": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "KrGcL4JQUxStbMjR",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "@AnalizadorDeSentimientos",
+        "text": "=Presten atencon equipo, recibimos una reseña negativa, respondan de inmediato.   \n\nReseña: {{ $('Limit').item.json['Reseña'] }} \nProducto: {{ $('Limit').item.json.Producto }} \nCliente: {{ $('Limit').item.json.Cliente }} \nFecha: {{ $('Limit').item.json.Fecha }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1328,
+        16
+      ],
+      "id": "e4a01826-dcd9-435e-aff0-70ccb3b42ff2",
+      "name": "Send a text message",
+      "webhookId": "3a361000-924e-4fde-ad70-fb73c096fdd8",
+      "credentials": {
+        "telegramApi": {
+          "id": "xrVz1RD0aHBeQYZj",
+          "name": "Telegram account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Google Sheets Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Update row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Limit": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "Limit",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a text message": {
+      "main": [
+        [
+          {
+            "node": "Update row in sheet1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "b30ab36db9199a4b5ba1043acd02c0a760e01bce54fe471eaf0d783194a3a844"
+  }
+}
